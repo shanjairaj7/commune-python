@@ -35,7 +35,7 @@ from commune.exceptions import (
     ValidationError,
     RateLimitError,
 )
-from commune.webhooks import verify_signature, WebhookVerificationError
+from commune.webhooks import verify_signature, compute_signature, WebhookVerificationError
 
 __all__ = [
     "CommuneClient",
@@ -70,6 +70,7 @@ __all__ = [
     "ValidationError",
     "RateLimitError",
     "verify_signature",
+    "compute_signature",
     "WebhookVerificationError",
 ]
 

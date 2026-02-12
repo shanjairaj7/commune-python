@@ -586,7 +586,14 @@ print(f"Download: {url_info.url}")
 
 ## Webhook Verification
 
-Commune signs every webhook delivery with HMAC-SHA256. Always verify before processing:
+Commune signs every outbound webhook delivery with HMAC-SHA256. The signature uses the format `v1={hex_digest}` and the timestamp is Unix **milliseconds**:
+
+```
+x-commune-signature: v1=5a3f2b...
+x-commune-timestamp: 1707667200000
+```
+
+Always verify before processing:
 
 ```python
 from commune import verify_signature, WebhookVerificationError
@@ -595,22 +602,33 @@ from commune import verify_signature, WebhookVerificationError
 try:
     verify_signature(
         payload=request.body,
-        signature=request.headers["X-Commune-Signature"],
+        signature=request.headers["x-commune-signature"],
         secret="whsec_...",  # Your inbox webhook secret
-        timestamp=request.headers.get("X-Commune-Timestamp"),
+        timestamp=request.headers["x-commune-timestamp"],
     )
 except WebhookVerificationError as e:
     print(f"Invalid webhook: {e}")
     return 401
 ```
 
+You can also compute signatures yourself (useful for testing):
+
+```python
+from commune import compute_signature
+
+sig = compute_signature(payload=body, secret="whsec_...", timestamp="1707667200000")
+# → "v1=5a3f2b..."
+```
+
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `payload` | `bytes \| str` | Yes | Raw request body |
-| `signature` | `str` | Yes | `X-Commune-Signature` header |
+| `signature` | `str` | Yes | `x-commune-signature` header (`v1=...`) |
 | `secret` | `str` | Yes | Your inbox webhook secret |
-| `timestamp` | `str` | No | `X-Commune-Timestamp` header (enables freshness check) |
+| `timestamp` | `str` | Yes* | `x-commune-timestamp` header (Unix ms) |
 | `tolerance_seconds` | `int` | No | Max age in seconds (default 300) |
+
+\* Technically optional, but the backend always sends it. Omitting it skips timestamp-based signing and freshness checks.
 
 ---
 
