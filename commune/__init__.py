@@ -1,0 +1,76 @@
+"""Commune – Python SDK for email infrastructure."""
+
+from commune.client import CommuneClient
+from commune.async_client import AsyncCommuneClient
+from commune.types import (
+    ContractModel,
+    Domain,
+    DomainDnsRecord,
+    Inbox,
+    InboxWebhook,
+    Thread,
+    ThreadList,
+    Message,
+    Participant,
+    MessageMetadata,
+    Attachment,
+    AttachmentUpload,
+    AttachmentUrl,
+    DomainVerificationResult,
+    DeleteResult,
+    SendMessageResult,
+    SendMessagePayload,
+    CreateDomainPayload,
+    CreateInboxPayload,
+    UpdateInboxPayload,
+    SetInboxWebhookPayload,
+    UploadAttachmentPayload,
+)
+from commune.exceptions import (
+    CommuneError,
+    AuthenticationError,
+    PermissionDeniedError,
+    PermissionError,
+    NotFoundError,
+    ValidationError,
+    RateLimitError,
+)
+from commune.webhooks import verify_signature, WebhookVerificationError
+
+__all__ = [
+    "CommuneClient",
+    "AsyncCommuneClient",
+    "ContractModel",
+    "Domain",
+    "DomainDnsRecord",
+    "Inbox",
+    "InboxWebhook",
+    "Thread",
+    "ThreadList",
+    "Message",
+    "Participant",
+    "MessageMetadata",
+    "Attachment",
+    "AttachmentUpload",
+    "AttachmentUrl",
+    "DomainVerificationResult",
+    "DeleteResult",
+    "SendMessageResult",
+    "SendMessagePayload",
+    "CreateDomainPayload",
+    "CreateInboxPayload",
+    "UpdateInboxPayload",
+    "SetInboxWebhookPayload",
+    "UploadAttachmentPayload",
+    "CommuneError",
+    "AuthenticationError",
+    "PermissionDeniedError",
+    "PermissionError",
+    "NotFoundError",
+    "ValidationError",
+    "RateLimitError",
+    "verify_signature",
+    "WebhookVerificationError",
+]
+
+__version__ = "0.2.0"
