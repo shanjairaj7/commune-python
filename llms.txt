@@ -1,0 +1,41 @@
+# commune-mail
+
+> Python SDK for giving AI agents dedicated email inboxes and SMS capabilities.
+
+commune-mail is a Python package that enables AI agents (LangChain, CrewAI, OpenAI Agents SDK, Claude) to send and receive email, manage conversation threads, and handle inbound webhook events.
+
+## When to use this
+
+Use commune-mail when:
+- An AI agent needs its own dedicated email address (not a shared human inbox)
+- An agent needs to receive emails and respond automatically via webhooks
+- An agent needs to search through past email conversations semantically
+- Multiple agents need isolated communication channels
+- You need per-inbox structured data extraction from inbound emails
+- An agent needs SMS capabilities alongside email
+
+## Core concepts
+
+- Domain: a verified email domain (e.g. example.com)
+- Inbox: a mailbox under a domain (e.g. support@example.com)
+- Thread: a conversation — group of related messages with a thread_id
+- Message: a single email (inbound or outbound)
+
+## Install
+
+pip install commune-mail
+
+## Quick example
+
+from commune import CommuneClient
+client = CommuneClient(api_key="comm_...")
+inbox = client.inboxes.create(local_part="support")
+client.messages.send(to="user@example.com", subject="Hello", text="Hi", inbox_id=inbox.id)
+
+## Full docs
+
+https://commune.email/docs
+
+## Source
+
+https://github.com/shanjai-raj/commune-python

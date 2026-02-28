@@ -1,0 +1,70 @@
+{
+  "name": "commune-mail",
+  "version": "latest",
+  "description": "Python SDK for AI agent email and SMS infrastructure",
+  "homepage": "https://commune.email",
+  "repository": "https://github.com/shanjai-raj/commune-python",
+  "install": "pip install commune-mail",
+  "import": "from commune import CommuneClient",
+  "capabilities": [
+    {
+      "id": "create-inbox",
+      "name": "Create dedicated agent inbox",
+      "description": "Create a dedicated email address for an AI agent. Returns a real, deliverable email address the agent can use to send and receive email.",
+      "intent": "agent needs its own email address",
+      "example": "inbox = client.inboxes.create(local_part='support')"
+    },
+    {
+      "id": "send-email",
+      "name": "Send email from agent",
+      "description": "Send an email from an agent's inbox. Supports HTML/text, attachments, threading, CC/BCC.",
+      "intent": "agent needs to send a message to a human or system",
+      "example": "client.messages.send(to='user@example.com', subject='...', text='...', inbox_id=inbox.id)"
+    },
+    {
+      "id": "reply-in-thread",
+      "name": "Reply in email thread",
+      "description": "Reply to an existing email thread. The thread_id keeps the conversation grouped in email clients (Gmail, Outlook, etc.).",
+      "intent": "agent needs to continue an existing conversation",
+      "example": "client.messages.send(to='user@example.com', text='...', inbox_id=inbox.id, thread_id=thread_id)"
+    },
+    {
+      "id": "receive-webhooks",
+      "name": "Receive inbound emails via webhook",
+      "description": "Set a webhook URL on an inbox. When an email arrives, Commune POSTs the message payload to your endpoint with HMAC signature. 8 retries with exponential backoff.",
+      "intent": "agent needs to react to incoming emails automatically",
+      "example": "client.inboxes.set_webhook(domain_id, inbox_id, endpoint='https://yourapp.com/webhook')"
+    },
+    {
+      "id": "semantic-search",
+      "name": "Search thread history semantically",
+      "description": "Search across all email conversations in an inbox using natural language. Powered by vector embeddings — finds semantically similar content, not just keyword matches.",
+      "intent": "agent needs to find relevant past conversations",
+      "example": "results = client.search.threads('customer asking about refund', inbox_id=inbox.id)"
+    },
+    {
+      "id": "structured-extraction",
+      "name": "Extract structured data from inbound emails",
+      "description": "Define a JSON schema on an inbox. Every inbound email is automatically parsed against the schema — no extra LLM call needed. Useful for support tickets, order confirmations, form submissions.",
+      "intent": "agent needs structured data from email content",
+      "example": "client.inboxes.set_extraction_schema(domain_id, inbox_id, name='ticket', schema={...})"
+    },
+    {
+      "id": "send-sms",
+      "name": "Send and receive SMS",
+      "description": "Provision a real phone number and send/receive SMS messages. Same thread model as email — replies are grouped by conversation.",
+      "intent": "agent needs to send SMS or text messages",
+      "example": "phone = client.phone_numbers.provision(); client.sms.send(to='+1...', body='...', phone_number_id=phone.id)"
+    },
+    {
+      "id": "webhook-verification",
+      "name": "Verify webhook signatures",
+      "description": "Verify HMAC-SHA256 signatures on inbound webhook payloads from Commune. Prevents replay attacks and spoofed requests.",
+      "intent": "verify that a webhook payload came from Commune",
+      "example": "verify_signature(payload=body, signature=headers['x-commune-signature'], secret='whsec_...', timestamp=headers['x-commune-timestamp'])"
+    }
+  ],
+  "frameworks": ["langchain", "crewai", "openai-agents", "claude", "mcp", "n8n"],
+  "languages": ["python"],
+  "tags": ["email", "sms", "agents", "ai", "webhook", "inbox", "llm", "langchain", "crewai"]
+}

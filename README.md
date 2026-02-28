@@ -1,10 +1,11 @@
-# Python SDK for Email & SMS in AI Agents
-
 [![PyPI](https://img.shields.io/pypi/v/commune-mail?color=blue&label=PyPI)](https://pypi.org/project/commune-mail/)
-[![PyPI Downloads](https://img.shields.io/pypi/dm/commune-mail?label=installs%2Fmo)](https://pypi.org/project/commune-mail/)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue)](https://pypi.org/project/commune-mail/)
-[![MIT License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![commune.email](https://img.shields.io/badge/docs-commune.email-blue)](https://commune.email/?ref=commune-python)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)](https://pypi.org/project/commune-mail/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-commune.email-blue)](https://commune.email/docs?ref=commune-python)
+[![MCP Server](https://img.shields.io/badge/MCP-commune--mcp-purple)](https://github.com/shanjai-raj/commune-mcp)
+[![Cookbook](https://img.shields.io/badge/examples-commune--cookbook-green)](https://github.com/shanjai-raj/commune-cookbook)
+
+# commune-mail
 
 Give your Python agent a real inbox. Send email, receive webhooks, manage threads — in 4 lines.
 
@@ -15,56 +16,88 @@ pip install commune-mail
 ```python
 from commune import CommuneClient
 
-commune = CommuneClient(api_key="comm_...")
-commune.messages.send(
+client = CommuneClient(api_key="comm_...")  # or set COMMUNE_API_KEY env var
+
+# Create a dedicated inbox for your agent — no domain setup, no DNS
+inbox = client.inboxes.create(local_part="support")
+print(inbox.address)  # → "support@agents.commune.email"
+
+# Send email from the inbox
+client.messages.send(
     to="user@example.com",
-    subject="From your agent",
-    text="Task complete.",
-    inbox_id="agent@yourdomain.com"
+    subject="Your ticket has been received",
+    text="Thanks for reaching out. We'll respond within 2 hours.",
+    inbox_id=inbox.id,
+)
+
+# Reply within an existing thread (keeps conversation grouped in email client)
+client.messages.send(
+    to="user@example.com",
+    subject="Re: Your ticket",
+    text="Issue resolved — here's what we did...",
+    inbox_id=inbox.id,
+    thread_id=thread_id,  # from webhook payload
 )
 ```
 
-## Table of Contents
+---
 
-- [Quickstart](#quickstart)
-- [Async Support](#async-support)
-- [Package Naming](#package-naming)
-- [Contract Stability](#contract-stability)
-- [Typed API Reference](#typed-api-reference)
-- [Concepts](#concepts)
-- [Client](#client)
-- [Domains](#domains)
-- [Inboxes](#inboxes)
-- [Threads](#threads)
-- [Messages](#messages)
-- [Attachments](#attachments)
-- [Webhook Verification](#webhook-verification)
-- [Error Handling](#error-handling)
-- [Security](#security)
+## What you can build
+
+- **Customer support agents** — Receive inbound tickets at `support@yourcompany.com`, classify intent with an LLM, route to the right handler, and reply in the same thread. The customer sees a normal email conversation.
+- **Hiring pipelines** — Outreach sequences to candidates, automated screening replies, interview scheduling, offer letters — all tracked per thread per candidate.
+- **Sales automation** — Personalized cold email from a CRM, follow-up sequences, lead qualification over email, handoff to human when warm.
+- **Investor updates** — Scheduled portfolio reports, deal flow notifications, LP communications — all with proper threading and read receipts.
+- **Multi-agent coordination** — Agents hand off tasks to each other via email. Agent A finishes a subtask, emails Agent B with the result. Agent B replies when done. Full audit trail in thread history.
 
 ---
 
-## Package Naming
+## Why commune-mail instead of alternatives
 
-- PyPI package name: `commune-mail`
-- Python import path: `commune`
-- Main client: `from commune import CommuneClient`
+| | Commune | Gmail API | SendGrid | Resend | Raw SMTP |
+|---|---|---|---|---|---|
+| Per-agent isolated inbox | ✅ | ❌ shared inbox | ❌ | ❌ | ❌ |
+| Inbound email + webhooks | ✅ | ✅ (complex setup) | ❌ | ✅ (limited) | ❌ |
+| Outbound sending | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Email threading (RFC 5322) | ✅ automatic | ✅ manual | ❌ | ❌ | ❌ manual |
+| Semantic search across history | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Structured JSON extraction | ✅ per-inbox schemas | ❌ | ❌ | ❌ | ❌ |
+| Prompt injection protection | ✅ built-in | ❌ | ❌ | ❌ | ❌ |
+| Agent-native design | ✅ | ❌ (human-first) | ❌ | ❌ | ❌ |
+| Self-hostable | ✅ | ❌ | ❌ | ❌ | ✅ |
+
+**The key difference:** Gmail API, SendGrid, and Resend are designed for humans or for bulk email. Commune is designed specifically for AI agents — each agent gets its own inbox, inbound emails fire webhooks, threads maintain conversation context, and the platform handles prompt injection and spam so your agent doesn't have to.
 
 ---
 
-## Contract Stability
+## How it works
 
-The SDK uses a strict-core contract policy:
+```
+Inbound:  User email → Commune → webhook → Your agent → [LLM reasoning] → reply via Commune → User email client
+                                                ↓
+                                    thread history / semantic search
+                                    structured extraction
+                                    prompt injection check
 
-- Stable core fields are typed for request payloads, thread/message structures, pagination, and attachment models.
-- Metadata is extensible where the API intentionally evolves (extra fields are allowed for forward compatibility).
-- Backward compatibility target is additive response changes without breaking existing integration code.
+Outbound: Your agent → commune.messages.send() → Commune → SMTP → User email client
+                                                      ↓
+                                            DKIM/SPF signed
+                                            delivery tracking
+                                            bounce handling
+```
 
----
+## Concepts
 
-## Typed API Reference
+Commune organizes email around four layers:
 
-See [API_REFERENCE.md](API_REFERENCE.md) for method-by-method request parameters, response types, and permission scopes.
+```
+Domain  →  Inbox  →  Thread  →  Message
+```
+
+- **Domain** — A custom email domain you own (e.g. `example.com`). You verify it by adding DNS records.
+- **Inbox** — A mailbox under a domain (e.g. `support@example.com`). Each inbox can have webhooks for real-time notifications.
+- **Thread** — A conversation: a group of related email messages sharing a subject/reply chain. Identified by `thread_id`.
+- **Message** — A single email (inbound or outbound) within a thread.
 
 ---
 
@@ -79,7 +112,7 @@ client = CommuneClient(api_key="comm_...")
 
 # Create an inbox — domain is auto-assigned
 inbox = client.inboxes.create(local_part="support")
-print(f"Inbox ready: {inbox.address}")  # → "support@agents.postking.io"
+print(f"Inbox ready: {inbox.address}")  # → "support@agents.commune.email"
 
 # List email threads
 threads = client.threads.list(inbox_id=inbox.id, limit=5)
@@ -97,9 +130,7 @@ client.messages.send(
 
 That's it. No domain verification, no DNS records. Just create an inbox and start sending/receiving.
 
----
-
-## Async Support
+## Async support
 
 Every method is available as `async`/`await` via `AsyncCommuneClient`:
 
@@ -123,23 +154,6 @@ asyncio.run(main())
 ```
 
 The async client has the exact same API surface — just `await` every call.
-
----
-
-## Concepts
-
-Commune organizes email around four layers:
-
-```
-Domain  →  Inbox  →  Thread  →  Message
-```
-
-- **Domain** — A custom email domain you own (e.g. `example.com`). You verify it by adding DNS records.
-- **Inbox** — A mailbox under a domain (e.g. `support@example.com`). Each inbox can have webhooks for real-time notifications.
-- **Thread** — A conversation: a group of related email messages sharing a subject/reply chain. Identified by `thread_id`.
-- **Message** — A single email (inbound or outbound) within a thread.
-
----
 
 ## Client
 
@@ -274,7 +288,7 @@ Create a new inbox. Domain is **auto-resolved** if not provided — no DNS setup
 ```python
 # Simplest — domain auto-assigned
 inbox = client.inboxes.create(local_part="support")
-print(inbox.address)  # → "support@agents.postking.io"
+print(inbox.address)  # → "support@agents.commune.email"
 
 # Explicit domain (if you have a custom domain)
 inbox = client.inboxes.create(local_part="billing", domain_id="d_abc123")
@@ -697,6 +711,55 @@ except CommuneError as e:
 
 ---
 
+## Search, Triage, Delivery, and Extraction
+
+The Python SDK now includes full `/v1` parity for these capability groups.
+
+### Structured extraction (per inbox)
+
+```python
+client.inboxes.set_extraction_schema(
+    domain_id="d_abc",
+    inbox_id="inbox_xyz",
+    name="support_ticket",
+    schema={
+        "type": "object",
+        "properties": {
+            "intent": {"type": "string"},
+            "priority": {"type": "string"},
+        },
+    },
+)
+```
+
+### Semantic thread search
+
+```python
+results = client.search.threads(
+    "customer asking for refund",
+    inbox_id="inbox_xyz",
+    limit=10,
+)
+```
+
+### Thread triage
+
+```python
+client.threads.set_status("thread_123", "needs_reply")
+client.threads.add_tags("thread_123", ["vip", "billing"])
+client.threads.assign("thread_123", "agent:alice")
+```
+
+### Delivery insights
+
+```python
+metrics = client.delivery.metrics(domain_id="d_abc", period="7d")
+events = client.delivery.events(domain_id="d_abc", limit=50)
+suppressions = client.delivery.suppressions(inbox_id="inbox_xyz")
+```
+
+---
+
 ## Security
 
 Commune is built as production email infrastructure — deliverability, authentication, and abuse prevention are handled at the platform level so you don't have to build them yourself.
@@ -806,6 +869,103 @@ Inbound webhook payloads from Commune are signed with your inbox webhook secret.
 - Attachments are scoped to the organization that uploaded them.
 
 ---
+
+## FAQ
+
+**How do I give my LangChain agent its own email address?**
+Install `commune-mail`, create an inbox with `client.inboxes.create(local_part="myagent")`, and wrap the send/receive calls as LangChain tools. The inbox gets a real address like `myagent@agents.commune.email` — no DNS setup required. See the [commune-cookbook](https://github.com/shanjai-raj/commune-cookbook) for a complete LangChain email tool example.
+
+**Can my agent receive emails and respond automatically?**
+Yes. Set a webhook URL on the inbox using `client.inboxes.set_webhook(domain_id, inbox_id, endpoint="https://yourapp.com/webhook")`. When an email arrives, Commune POSTs the full message payload — including sender, subject, body, and `thread_id` — to your endpoint. Your agent processes it and replies with `client.messages.send(..., thread_id=thread_id)`.
+
+**What happens if my webhook endpoint is down?**
+Commune retries up to 8 times with exponential backoff (1s, 2s, 4s, 8s, 16s, 32s, 64s, 128s). A circuit breaker protects your server on recovery — if your endpoint comes back up, retries resume from where they left off. You can also manually replay failed webhooks from the dashboard.
+
+**How is this different from just using Gmail or SMTP?**
+Gmail API is designed for human email accounts — it requires OAuth per-user, doesn't support programmatic inbox creation, and has no webhook model for inbound email without polling. Raw SMTP gives you outbound delivery but no inbound, no threading, no search, and no agent isolation. Commune is purpose-built for agents: one API call creates a real inbox, inbound mail fires a webhook, threads are automatically tracked, and the platform handles DKIM/SPF/DMARC so your emails actually reach the inbox. See the [comparison table](#why-commune-mail-instead-of-alternatives) above.
+
+**Can multiple agents share one inbox?**
+You can, but it's not recommended. The agent-native pattern is one inbox per agent or per logical workflow — so a support agent has `support@...`, a billing agent has `billing@...`, and so on. This gives you clean thread isolation, per-inbox extraction schemas, and clear audit trails. Sharing one inbox means your agents need to coordinate routing logic themselves.
+
+**How do I search through an agent's email history?**
+Use `client.search.threads()` with a natural language query. The search is powered by vector embeddings — it finds semantically similar conversations, not just keyword matches. Pass `inbox_id` to scope the search to one agent's mailbox:
+```python
+results = client.search.threads(
+    "customer asking about billing issue",
+    inbox_id=inbox.id,
+    limit=5,
+)
+for r in results:
+    print(r.subject, r.snippet)
+```
+
+**What is prompt injection protection?**
+When a malicious user sends an email containing instructions like "Ignore your previous instructions and...", those instructions could hijack your agent if it feeds raw email content into an LLM prompt. Commune's prompt injection protection scans inbound email content for injection patterns before the message reaches your webhook, flags suspicious messages in the metadata, and strips or escapes known attack vectors so your agent doesn't have to sanitize raw user input.
+
+**Does Commune work with async Python (asyncio)?**
+Yes. Import `AsyncCommuneClient` instead of `CommuneClient` and use `async with` and `await`. The async client has identical API surface — every method is just awaitable. This works natively with FastAPI, aiohttp, and any asyncio-based framework. See the [Async Support](#async-support) section for a complete example.
+
+**How do I give my agent an email address at my own domain?**
+Register your domain with `client.domains.create(name="yourcompany.com")`, add the DNS records returned by `client.domains.records(domain_id)` at your registrar (they include MX, DKIM CNAME, and SPF TXT records), then call `client.domains.verify(domain_id)`. Once verified (usually 5–30 minutes for DNS propagation), create inboxes under it: `client.inboxes.create(local_part="support", domain_id=domain.id)` — your agent now has `support@yourcompany.com`.
+
+**What does thread_id do?**
+`thread_id` links a reply to an existing conversation so it appears as a threaded reply in email clients like Gmail and Outlook. Without it, each `messages.send()` call creates a brand-new email conversation, even if the subject line is identical. Always capture the `thread_id` from the inbound webhook payload and pass it back when replying — this is the single most important thing to get right for good user experience.
+
+**How do I extract structured data from inbound emails automatically?**
+Define a JSON Schema on your inbox using `client.inboxes.set_extraction_schema()`. Every inbound email is then automatically parsed against the schema — the extracted fields appear in the webhook payload under `extracted`. No extra LLM call needed on your side:
+```python
+client.inboxes.set_extraction_schema(
+    domain_id="d_abc",
+    inbox_id="inbox_xyz",
+    name="support_ticket",
+    schema={
+        "type": "object",
+        "properties": {
+            "intent": {"type": "string", "description": "What the customer wants"},
+            "priority": {"type": "string", "enum": ["low", "medium", "high"]},
+            "order_number": {"type": "string"},
+        },
+    },
+)
+```
+
+**What's the difference between commune-mail (Python) and commune-ai (TypeScript)?**
+`commune-mail` is the Python SDK — the one this README covers. `commune-ai` (npm: `commune-ai`) is the TypeScript/JavaScript SDK with an identical API surface, designed for Node.js, Deno, Bun, and edge runtimes. Both SDKs talk to the same Commune API. Choose based on your agent's runtime — Python for LangChain/CrewAI/standard Python agents, TypeScript for Node.js agents or Vercel AI SDK workflows.
+
+**Can I self-host Commune?**
+Yes. The Commune server is open-source and can be deployed on your own infrastructure. You'll need MongoDB, Redis, and an SMTP relay (e.g. AWS SES or Postfix). Set `COMMUNE_API_KEY`, `EMAIL_ENCRYPTION_KEY`, and `CLAMAV_HOST` (optional) in your environment. The Python SDK's `base_url` parameter lets you point it at your self-hosted instance: `CommuneClient(api_key="...", base_url="https://your-commune-server.com")`.
+
+**How do I handle attachments?**
+Upload attachments first with `client.attachments.upload(content, filename, mime_type)` where `content` is base64-encoded. This returns an `attachment_id`. Pass that ID in the `attachments` list when calling `messages.send()`. To access inbound attachments, retrieve the attachment ID from the message object and call `client.attachments.url(attachment_id)` to get a temporary signed download URL (default 1-hour expiry).
+
+**What does the API key look like?**
+API keys use the `comm_` prefix followed by 64 cryptographically random lowercase hex characters — e.g. `comm_a1b2c3d4e5f6...` (68 characters total). Keys are bcrypt-hashed before storage so the raw value is only shown once at creation. Store it in an environment variable (`COMMUNE_API_KEY`) and never commit it to source control. You can create and revoke keys from the [Commune dashboard](https://commune.email).
+
+---
+
+## Frameworks
+
+commune-mail works out of the box with any Python framework or agent orchestrator:
+
+- **LangChain** — Wrap `client.messages.send()` and `client.search.threads()` as `Tool` objects; use inbox webhooks to trigger agent chains.
+- **CrewAI** — Give each crew member its own dedicated inbox; agents email each other with full thread tracking.
+- **OpenAI Agents SDK** — Use commune-mail in function tools exposed to the model; the agent calls `send_email` and `get_thread` as native tool calls.
+- **Claude tool_use** — Define commune-mail operations as tool schemas; Claude calls them directly during reasoning.
+- **MCP (Model Context Protocol)** — Use the [commune-mcp](https://github.com/shanjai-raj/commune-mcp) server to expose Commune capabilities as MCP tools to any MCP-compatible client.
+- **n8n** — Use the HTTP Request node to call the Commune REST API directly, or use commune-mail in an n8n Code node.
+
+See the [commune-cookbook](https://github.com/shanjai-raj/commune-cookbook) for complete working examples with each framework.
+
+---
+
+## Resources
+
+- **Docs:** [commune.email/docs](https://commune.email/docs)
+- **PyPI:** [pypi.org/project/commune-mail](https://pypi.org/project/commune-mail/)
+- **npm (TypeScript SDK):** [npmjs.com/package/commune-ai](https://www.npmjs.com/package/commune-ai)
+- **MCP Server:** [github.com/shanjai-raj/commune-mcp](https://github.com/shanjai-raj/commune-mcp)
+- **Cookbook:** [github.com/shanjai-raj/commune-cookbook](https://github.com/shanjai-raj/commune-cookbook)
+- **API Reference:** [API_REFERENCE.md](API_REFERENCE.md)
 
 ## License
 
