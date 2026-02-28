@@ -1,9 +1,26 @@
-# Commune Python SDK
+# Python SDK for Email & SMS in AI Agents
 
-Email infrastructure for agents — set up an inbox and send your first email in 30 seconds. Programmatic inboxes (~1 line), consistent threads, setup and verify custom domains, send and receive attachments, structured data extraction.
+[![PyPI](https://img.shields.io/pypi/v/commune-mail?color=blue&label=PyPI)](https://pypi.org/project/commune-mail/)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue)](https://pypi.org/project/commune-mail/)
+[![MIT License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![commune.email](https://img.shields.io/badge/docs-commune.email-blue)](https://commune.email)
+
+Give your Python agent a real inbox. Send email, receive webhooks, manage threads — in 4 lines.
 
 ```bash
 pip install commune-mail
+```
+
+```python
+from commune import CommuneClient
+
+commune = CommuneClient(api_key="comm_...")
+commune.messages.send(
+    to="user@example.com",
+    subject="From your agent",
+    text="Task complete.",
+    inbox_id="agent@yourdomain.com"
+)
 ```
 
 ## Table of Contents
