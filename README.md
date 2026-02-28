@@ -1,9 +1,10 @@
 # Python SDK for Email & SMS in AI Agents
 
 [![PyPI](https://img.shields.io/pypi/v/commune-mail?color=blue&label=PyPI)](https://pypi.org/project/commune-mail/)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/commune-mail?label=installs%2Fmo)](https://pypi.org/project/commune-mail/)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue)](https://pypi.org/project/commune-mail/)
 [![MIT License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![commune.email](https://img.shields.io/badge/docs-commune.email-blue)](https://commune.email)
+[![commune.email](https://img.shields.io/badge/docs-commune.email-blue)](https://commune.email/?ref=commune-python)
 
 Give your Python agent a real inbox. Send email, receive webhooks, manage threads — in 4 lines.
 
