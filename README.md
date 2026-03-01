@@ -1,4 +1,5 @@
 [![PyPI](https://img.shields.io/pypi/v/commune-mail?color=blue&label=PyPI)](https://pypi.org/project/commune-mail/)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/commune-mail?label=downloads%2Fmo&color=blue)](https://pypi.org/project/commune-mail/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)](https://pypi.org/project/commune-mail/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-commune.email-blue)](https://commune.email/docs?ref=commune-python)
