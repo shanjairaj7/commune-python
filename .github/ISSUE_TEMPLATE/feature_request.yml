@@ -1,0 +1,28 @@
+name: Feature Request
+description: Suggest a new capability for Commune
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: "We'd love to hear your ideas!"
+  - type: textarea
+    id: use-case
+    attributes:
+      label: What agent use case does this enable?
+      description: Describe the AI agent task that would become possible or easier
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed API or behavior
+      description: What should the SDK/API look like?
+      render: python
+  - type: dropdown
+    id: priority
+    attributes:
+      label: How important is this to your project?
+      options:
+        - Blocking — I cannot ship without this
+        - High — Would significantly improve my workflow
+        - Nice to have
