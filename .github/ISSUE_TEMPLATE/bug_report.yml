@@ -1,0 +1,46 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Thanks for reporting a bug! Please fill out the details below."
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the bug. What did you expect vs what actually happened?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Paste the shortest code that reproduces the issue
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: Error message or unexpected output
+      render: text
+  - type: dropdown
+    id: framework
+    attributes:
+      label: Agent framework
+      options:
+        - LangChain
+        - CrewAI
+        - OpenAI Agents SDK
+        - Claude / Anthropic
+        - AutoGen
+        - None / plain Python
+        - Other
+  - type: input
+    id: version
+    attributes:
+      label: commune-mail version
+      placeholder: "e.g. 0.2.1"
+    validations:
+      required: true
