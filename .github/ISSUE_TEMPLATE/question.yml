@@ -1,0 +1,30 @@
+name: Question
+description: Ask a question about using Commune
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: "For quick answers, check the [cookbook](https://github.com/shanjai-raj/commune-cookbook) and [discussions](https://github.com/shanjai-raj/commune-cookbook/discussions) first."
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: What have you tried?
+  - type: dropdown
+    id: framework
+    attributes:
+      label: Agent framework (if relevant)
+      options:
+        - LangChain
+        - CrewAI
+        - OpenAI Agents SDK
+        - Claude / Anthropic
+        - AutoGen
+        - None / plain Python
+        - Other
+        - N/A
