@@ -10,7 +10,12 @@ readme = "README.md"
 license = "MIT"
 requires-python = ">=3.9"
 authors = [{ name = "Commune", email = "hello@commune.sh" }]
-keywords = ["email", "ai", "agent", "inbox", "api", "threads", "sdk"]
+keywords = [
+    "email", "ai-agents", "agents", "llm", "langchain", "crewai", "openai-agents",
+    "claude", "mcp", "model-context-protocol", "webhook", "inbox", "smtp",
+    "email-api", "email-sdk", "async-agents", "multi-agent", "ai", "python-sdk",
+    "email-infrastructure", "agent-tools", "thread", "sms", "commune"
+]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -22,6 +27,9 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Communications :: Email",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Internet :: WWW/HTTP",
     "Typing :: Typed",
 ]
 dependencies = [
